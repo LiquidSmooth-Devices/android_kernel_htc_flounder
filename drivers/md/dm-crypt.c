@@ -22,11 +22,12 @@
 #include <linux/atomic.h>
 #include <linux/scatterlist.h>
 #include <linux/rbtree.h>
-#include <linux/sched/rt.h>
 #include <asm/page.h>
 #include <asm/unaligned.h>
 
 #include <linux/device-mapper.h>
+
+#include "../../kernel/sched/sched.h"
 
 #define DM_MSG_PREFIX "crypt"
 
@@ -1348,7 +1349,7 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	const char *opt_string;
 	char dummy;
 
-	struct sched_param param = { .sched_priority = MAX_RT_PRIO - 2 };
+	struct sched_param param = { .sched_priority = NICE_TO_PRIO(_kcryptd_nice) };
 
 	static struct dm_arg _args[] = {
 		{0, 1, "Invalid number of feature args"},
