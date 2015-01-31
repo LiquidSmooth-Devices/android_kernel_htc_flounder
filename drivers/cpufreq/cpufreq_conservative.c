@@ -23,6 +23,7 @@
 #include <linux/slab.h>
 #include <linux/sysfs.h>
 #include <linux/types.h>
+#include <linux/touchboost.h>
 
 #include "cpufreq_governor.h"
 
@@ -32,7 +33,8 @@
 #define DEF_FREQUENCY_STEP			(5)
 #define DEF_SAMPLING_DOWN_FACTOR		(1)
 #define MAX_SAMPLING_DOWN_FACTOR		(10)
-#define MICRO_FREQUENCY_MIN_SAMPLE_RATE	(10000)
+#define BOOST_DURATION_US			(40000)
+#define BOOST_FREQ_VAL				(1500000)
 
 static DEFINE_PER_CPU(struct cs_cpu_dbs_info_s, cs_cpu_dbs_info);
 
@@ -64,6 +66,8 @@ static void cs_check_cpu(int cpu, unsigned int load)
 	struct dbs_data *dbs_data = policy->governor_data;
 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
 	unsigned int freq_target;
+	u64 now = ktime_to_us(ktime_get());
+	bool boosted = now < (get_input_time() + BOOST_DURATION_US);
 
 	/*
 	 * break out if we 'cannot' reduce the speed as the user might
@@ -80,7 +84,11 @@ static void cs_check_cpu(int cpu, unsigned int load)
 		if (dbs_info->requested_freq == policy->max)
 			return;
 
-		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+		if (boosted && policy->cur < BOOST_FREQ_VAL)
+			dbs_info->requested_freq = BOOST_FREQ_VAL;
+		else
+			dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
+
 		if (dbs_info->requested_freq > policy->max)
 			dbs_info->requested_freq = policy->max;
 
@@ -96,6 +104,9 @@ static void cs_check_cpu(int cpu, unsigned int load)
 
 	/* Check for frequency decrease */
 	if (load < cs_tuners->down_threshold) {
+		if (boosted && policy->cur <= BOOST_FREQ_VAL)
+			return;
+
 		/*
 		 * if we cannot reduce the frequency anymore, break out early
 		 */
@@ -348,7 +359,7 @@ static int cs_init(struct dbs_data *dbs_data)
 	tuners->freq_step = DEF_FREQUENCY_STEP;
 
 	dbs_data->tuners = tuners;
-	dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+
 	mutex_init(&dbs_data->mutex);
 	return 0;
 }

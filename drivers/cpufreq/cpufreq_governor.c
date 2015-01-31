@@ -30,6 +30,8 @@
 
 #include "cpufreq_governor.h"
 
+#define MICRO_FREQUENCY_MIN_SAMPLE_RATE	(10000)
+
 static struct attribute_group *get_sysfs_attr(struct dbs_data *dbs_data)
 {
 	if (have_governor_per_policy())
@@ -331,10 +333,8 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
 			latency = 1;
 
 		/* Bring kernel and HW constraints together */
-		dbs_data->min_sampling_rate = max(dbs_data->min_sampling_rate,
-				MIN_LATENCY_MULTIPLIER * latency);
-		set_sampling_rate(dbs_data, max(dbs_data->min_sampling_rate,
-					latency * LATENCY_MULTIPLIER));
+		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+		set_sampling_rate(dbs_data, MICRO_FREQUENCY_MIN_SAMPLE_RATE);
 
 		if ((cdata->governor == GOV_CONSERVATIVE) &&
 				(!policy->governor->initialized)) {
