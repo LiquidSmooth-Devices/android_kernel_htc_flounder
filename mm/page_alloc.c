@@ -949,6 +949,11 @@ static int fallbacks[MIGRATE_TYPES][4] = {
 #endif
 };
 
+int *get_migratetype_fallbacks(int mtype)
+{
+	return fallbacks[mtype];
+}
+
 /*
  * Move the free pages in a range to the free lists of the requested type.
  * Note that start_page and end_pages are not aligned on a pageblock
@@ -4550,7 +4555,7 @@ static inline void setup_usemap(struct pglist_data *pgdat, struct zone *zone,
 #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
 
 /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
-void __init set_pageblock_order(void)
+void set_pageblock_order(void)
 {
 	unsigned int order;
 
@@ -4578,7 +4583,7 @@ void __init set_pageblock_order(void)
  * include/linux/pageblock-flags.h for the values of pageblock_order based on
  * the kernel config
  */
-void __init set_pageblock_order(void)
+void set_pageblock_order(void)
 {
 }
 

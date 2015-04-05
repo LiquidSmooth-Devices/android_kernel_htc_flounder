@@ -1233,6 +1233,9 @@ static unsigned int __cpufreq_get(unsigned int cpu)
 
 	ret_freq = cpufreq_driver->get(cpu);
 
+	if (!policy)
+		return ret_freq;
+
 	if (ret_freq && policy->cur &&
 		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
 		/* verify no discrepancy between actual and
@@ -2019,7 +2022,11 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 	cpufreq_driver = driver_data;
 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
 
+	register_hotcpu_notifier(&cpufreq_cpu_notifier);
+
+	get_online_cpus();
 	ret = subsys_interface_register(&cpufreq_interface);
+	put_online_cpus();
 	if (ret)
 		goto err_null_driver;
 
@@ -2042,13 +2049,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 		}
 	}
 
-	register_hotcpu_notifier(&cpufreq_cpu_notifier);
 	pr_debug("driver %s up and running\n", driver_data->name);
 
 	return 0;
 err_if_unreg:
 	subsys_interface_unregister(&cpufreq_interface);
 err_null_driver:
+	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
 	write_lock_irqsave(&cpufreq_driver_lock, flags);
 	cpufreq_driver = NULL;
 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);

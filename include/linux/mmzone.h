@@ -63,6 +63,14 @@ enum {
 	MIGRATE_TYPES
 };
 
+/*
+ * Returns a list which contains the migrate types on to which
+ * an allocation falls back when the free list for the migrate
+ * type mtype is depleted.
+ * The end of the list is delimited by the type MIGRATE_RESERVE.
+ */
+extern int *get_migratetype_fallbacks(int mtype);
+
 #ifdef CONFIG_CMA
 #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
 #else
@@ -495,6 +503,13 @@ typedef enum {
 	ZONE_CONGESTED,			/* zone has many dirty pages backed by
 					 * a congested BDI
 					 */
+	ZONE_TAIL_LRU_DIRTY,		/* reclaim scanning has recently found
+					 * many dirty file pages at the tail
+					 * of the LRU.
+					 */
+	ZONE_WRITEBACK,			/* reclaim scanning has recently found
+					 * many pages under writeback
+					 */
 } zone_flags_t;
 
 static inline void zone_set_flag(struct zone *zone, zone_flags_t flag)
@@ -515,6 +530,16 @@ static inline void zone_clear_flag(struct zone *zone, zone_flags_t flag)
 static inline int zone_is_reclaim_congested(const struct zone *zone)
 {
 	return test_bit(ZONE_CONGESTED, &zone->flags);
+}
+
+static inline int zone_is_reclaim_dirty(const struct zone *zone)
+{
+	return test_bit(ZONE_TAIL_LRU_DIRTY, &zone->flags);
+}
+
+static inline int zone_is_reclaim_writeback(const struct zone *zone)
+{
+	return test_bit(ZONE_WRITEBACK, &zone->flags);
 }
 
 static inline int zone_is_reclaim_locked(const struct zone *zone)
