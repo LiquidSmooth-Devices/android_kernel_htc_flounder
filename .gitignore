@@ -92,3 +92,6 @@ GTAGS
 modules
 stock
 \#*#
+
+# Deathly rules
+/deathly_bootimg/deathly_anykernel_zip/zImage
