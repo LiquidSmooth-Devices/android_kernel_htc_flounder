@@ -4,12 +4,12 @@
 ## AnyKernel setup
 # EDIFY properties
 kernel.string=Deathly Flounder
-do.devicecheck=0
+do.devicecheck=1
 do.initd=0
 do.modules=0
 do.cleanup=1
 device.name1=flounder
-device.name2=flounderlte
+device.name2=flounder_lte
 device.name3=
 device.name4=
 device.name5=
@@ -61,8 +61,8 @@ write_boot() {
     secondoff=`cat *-secondoff`;
     secondoff="--second_offset $secondoff";
   fi;
-  if [ -f /tmp/anykernel/zImage ]; then
-    kernel=/tmp/anykernel/zImage;
+  if [ -f /tmp/anykernel/Image.gz-dtb ]; then
+    kernel=/tmp/anykernel/Image.gz-dtb;
   else
     kernel=`ls *-zImage`;
     kernel=$split_img/$kernel;
