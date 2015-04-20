@@ -33,7 +33,7 @@ unzip -o $ZIP;
 
 ui_print "$(file_getprop /tmp/anykernel/anykernel.sh kernel.string)";
 ui_print " ";
-ui_print "AnyKernel2 by osm0sis @ xda-developers";
+ui_print "AnyKernel Installer by osm0sis";
 ui_print " ";
 /sbin/busybox mount /system;
 
@@ -67,10 +67,10 @@ if [ "$(cat /tmp/anykernel/exitcode)" == 1 ]; then
 fi;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.modules)" == 1 ]; then
-  ui_print "Pushing modules...";
+  ui_print "Enabling fast charge and wake gestures";
   ui_print " ";
-  cp -f /tmp/anykernel/modules/* /system/lib/modules/;
-  set_perm_recursive 0 0 0755 0644 /system/lib/modules;
+  cp -f /tmp/anykernel/modules/* /system/etc/init.d;
+  set_perm_recursive 0 0 0755 0755 /system/etc/init.d;
 fi;
 
 if [ "$(file_getprop /tmp/anykernel/anykernel.sh do.cleanup)" == 1 ]; then
